@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, maximum-scale=1.0,
+               user-scalable=no, viewport-fit=cover">
+    <title>Car Controller</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div id="landscape-warning">Rotate your phone to landscape mode</div>
+
+<!-- Mode switcher + Bluetooth button -->
+<div style="position:fixed; top:10px; left:50%; transform:translateX(-50%); display:flex; gap:10px;">
+    <select id="mode" style="font-size:20px; padding:5px;">
+        <option value="buttons">Buttons</option>
+        <option value="sticks">Sticks</option>
+    </select>
+    <button id="connect" style="font-size:20px; padding:5px;">Connect</button>
+</div>
+
+<!-- BUTTON MODE -->
+<div id="button-mode">
+    <div id="left-buttons">
+        <div class="btn" id="btn-left">⬅️</div>
+        <div class="btn" id="btn-right">➡️</div>
+    </div>
+
+    <div id="right-buttons">
+        <div class="btn" id="btn-gas">⬆️</div>
+        <div class="btn" id="btn-brake">⬇️</div>
+    </div>
+</div>
+
+<!-- STICK MODE -->
+<div id="sticks-mode" style="display:none;">
+    <div id="stick-left-area" class="stick-area"></div>
+    <div id="stick-right-area" class="stick-area"></div>
+
+    <div id="stick-left" class="stick"><div class="stick-dot"></div></div>
+    <div id="stick-right" class="stick"><div class="stick-dot"></div></div>
+</div>
+
+<script src=src/script.js>
+
+</script>
+
+</body>
+</html>

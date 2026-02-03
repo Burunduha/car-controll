@@ -1,0 +1,99 @@
+body {
+    background: #111;
+    color: white;
+    margin: 0;
+    overflow: hidden;
+    font-family: sans-serif;
+}
+
+/* Landscape warning */
+#landscape-warning {
+    position: fixed;
+    inset: 0;
+    background: black;
+    color: white;
+    font-size: 24px;
+    display: none;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Round control buttons */
+.btn {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    background: #333;
+    border: 3px solid #666;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 40px;
+    user-select: none;
+    margin: 10px;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+/* Flash animation on press */
+.btn.active {
+    background: white !important;
+    border-color: white !important;
+    color: black !important;
+}
+
+/* Left button group */
+#left-buttons {
+    position: fixed;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+}
+
+/* Right button group */
+#right-buttons {
+    position: fixed;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Stick touch areas */
+.stick-area {
+    position: fixed;
+    width: 45%;
+    height: 100%;
+    top: 0;
+}
+#stick-left-area { left: 0; }
+#stick-right-area { right: 0; }
+
+/* Visual floating stick */
+.stick {
+    position: absolute;
+    width: 140px;
+    height: 140px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 50%;
+    border: 2px solid #888;
+    display: none;
+    transform: translate(-70px, -70px);
+}
+
+.stick-dot {
+    width: 50px;
+    height: 50px;
+    background: rgba(255,255,255,0.3);
+    border-radius: 50%;
+    position: absolute;
+    top: 45px;
+    left: 45px;
+}
+html, body {
+    touch-action: none;
+}
