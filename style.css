@@ -1,12 +1,15 @@
-body {
+/* ================== GLOBAL ================== */
+html, body {
+    margin: 0;
+    padding: 0;
     background: #111;
     color: white;
-    margin: 0;
-    overflow: hidden;
     font-family: sans-serif;
+    overflow: hidden;
+    touch-action: none;
 }
 
-/* Landscape warning */
+/* ================== LANDSCAPE WARNING ================== */
 #landscape-warning {
     position: fixed;
     inset: 0;
@@ -16,9 +19,31 @@ body {
     display: none;
     justify-content: center;
     align-items: center;
+    z-index: 1000;
 }
 
-/* Round control buttons */
+/* ================== MODE CONTAINERS ================== */
+#button-mode,
+#sticks-mode {
+    position: fixed;
+    inset: 0;
+}
+
+/* default */
+#button-mode {
+    display: block;
+}
+
+#sticks-mode {
+    display: none;
+    pointer-events: none; /* IMPORTANT */
+}
+
+#sticks-mode.active {
+    pointer-events: auto;
+}
+
+/* ================== BUTTONS ================== */
 .btn {
     width: 90px;
     height: 90px;
@@ -30,29 +55,26 @@ body {
     align-items: center;
     font-size: 40px;
     user-select: none;
-    margin: 10px;
     transition: background 0.15s, border-color 0.15s;
 }
 
-/* Flash animation on press */
 .btn.active {
-    background: white !important;
-    border-color: white !important;
-    color: black !important;
+    background: white;
+    border-color: white;
+    color: black;
 }
 
-/* Left button group */
+/* Left buttons */
 #left-buttons {
     position: fixed;
     left: 20px;
     top: 50%;
     transform: translateY(-50%);
     display: flex;
-    flex-direction: row;
     gap: 20px;
 }
 
-/* Right button group */
+/* Right buttons */
 #right-buttons {
     position: fixed;
     right: 20px;
@@ -63,53 +85,35 @@ body {
     gap: 20px;
 }
 
-/* Stick touch areas */
+/* ================== STICK AREAS ================== */
 .stick-area {
     position: fixed;
+    top: 0;
     width: 45%;
     height: 100%;
-    top: 0;
 }
+
 #stick-left-area { left: 0; }
 #stick-right-area { right: 0; }
 
-/* Visual floating stick */
+/* ================== STICKS ================== */
 .stick {
     position: absolute;
     width: 140px;
     height: 140px;
-    background: rgba(255,255,255,0.1);
     border-radius: 50%;
     border: 2px solid #888;
+    background: rgba(255,255,255,0.1);
     display: none;
     transform: translate(-70px, -70px);
 }
 
 .stick-dot {
+    position: absolute;
     width: 50px;
     height: 50px;
-    background: rgba(255,255,255,0.3);
     border-radius: 50%;
-    position: absolute;
+    background: rgba(255,255,255,0.3);
     top: 45px;
     left: 45px;
-}
-html, body {
-    touch-action: none;
-}
-
-/* === MODES CONTAINERS === */
-#button-mode,
-#sticks-mode {
-    position: fixed;
-    inset: 0;
-}
-
-/* default mode */
-#button-mode {
-    display: block;
-}
-
-#sticks-mode {
-    display: none;
 }

@@ -1,23 +1,21 @@
 /* =====================================================
-   ANDROID WEB BLUETOOTH CAR CONTROLLER
-   BUTTONS + STICKS (FIXED MODE SWITCH)
-   PROTOCOL: ANGLE;GAS | ANGLE;0
+   CAR CONTROLLER — BUTTONS + STICKS (STABLE)
    ===================================================== */
 
 /* ---------- BLE UUIDs (HM-10) ---------- */
 const SERVICE_UUID = '0000ffe0-0000-1000-8000-00805f9b34fb';
 const CHAR_UUID    = '0000ffe1-0000-1000-8000-00805f9b34fb';
 
-let bleCharacteristic = null;
+let bleChar = null;
 
-/* ---------- Control state ---------- */
-let currentAngle = "CENTER"; // LEFT / RIGHT / CENTER / number
+/* ---------- State ---------- */
+let currentAngle = "CENTER";
 let gasActive = false;
 
-/* ---------- Send throttling ---------- */
+/* ---------- Throttle ---------- */
 let lastSent = "";
-let lastSendTime = 0;
-const SEND_INTERVAL_MS = 40; // ~25 Hz
+let lastTime = 0;
+const SEND_INTERVAL = 40;
 
 /* =====================================================
    BLUETOOTH CONNECT
@@ -27,11 +25,9 @@ document.getElementById("connect").onclick = async () => {
         const device = await navigator.bluetooth.requestDevice({
             filters: [{ services: [SERVICE_UUID] }]
         });
-
         const server = await device.gatt.connect();
         const service = await server.getPrimaryService(SERVICE_UUID);
-        bleCharacteristic = await service.getCharacteristic(CHAR_UUID);
-
+        bleChar = await service.getCharacteristic(CHAR_UUID);
         alert("Bluetooth connected");
     } catch (e) {
         alert("Bluetooth error:\n" + e);
@@ -39,10 +35,10 @@ document.getElementById("connect").onclick = async () => {
 };
 
 /* =====================================================
-   SEND COMMAND (ANTI-SPAM)
+   SEND COMMAND
    ===================================================== */
 function sendCommand(force = false) {
-    if (!bleCharacteristic) return;
+    if (!bleChar) return;
 
     const speed = gasActive ? "GAS" : "0";
     const cmd = `${currentAngle};${speed}\n`;
@@ -50,21 +46,17 @@ function sendCommand(force = false) {
 
     if (!force) {
         if (cmd === lastSent) return;
-        if (now - lastSendTime < SEND_INTERVAL_MS) return;
+        if (now - lastTime < SEND_INTERVAL) return;
     }
 
     lastSent = cmd;
-    lastSendTime = now;
+    lastTime = now;
 
-    bleCharacteristic.writeValue(
-        new TextEncoder().encode(cmd)
-    );
-
-    console.log(cmd.trim());
+    bleChar.writeValue(new TextEncoder().encode(cmd));
 }
 
 /* =====================================================
-   MODE SWITCH (FIXED)
+   MODE SWITCH
    ===================================================== */
 const buttonMode = document.getElementById("button-mode");
 const sticksMode = document.getElementById("sticks-mode");
@@ -74,53 +66,49 @@ function setMode(mode) {
     if (mode === "buttons") {
         buttonMode.style.display = "block";
         sticksMode.style.display = "none";
+        sticksMode.classList.remove("active");
     } else {
         buttonMode.style.display = "none";
         sticksMode.style.display = "block";
+        sticksMode.classList.add("active");
     }
 
-    // reset state on mode switch
     gasActive = false;
     currentAngle = "CENTER";
     sendCommand(true);
 }
 
-// init
 setMode(modeSelect.value);
-
-modeSelect.addEventListener("change", () => {
-    setMode(modeSelect.value);
-});
+modeSelect.onchange = () => setMode(modeSelect.value);
 
 /* =====================================================
-   BUTTON MODE
+   BUTTONS
    ===================================================== */
-function bindButton(id, onPress, onRelease) {
-    const btn = document.getElementById(id);
-    if (!btn) return;
+function bindButton(id, press, release) {
+    const b = document.getElementById(id);
+    if (!b) return;
 
-    btn.addEventListener("touchstart", e => {
+    b.addEventListener("touchstart", e => {
         e.preventDefault();
-        btn.classList.add("active");
-        onPress();
+        b.classList.add("active");
+        press();
         sendCommand(true);
     });
 
-    btn.addEventListener("touchend", e => {
+    b.addEventListener("touchend", e => {
         e.preventDefault();
-        btn.classList.remove("active");
-        onRelease();
+        b.classList.remove("active");
+        release();
         sendCommand(true);
     });
 
-    btn.addEventListener("touchcancel", () => {
-        btn.classList.remove("active");
-        onRelease();
+    b.addEventListener("touchcancel", () => {
+        b.classList.remove("active");
+        release();
         sendCommand(true);
     });
 }
 
-/* --- Steering buttons --- */
 bindButton("btn-left",
     () => currentAngle = "LEFT",
     () => currentAngle = "CENTER"
@@ -131,7 +119,6 @@ bindButton("btn-right",
     () => currentAngle = "CENTER"
 );
 
-/* --- Throttle buttons --- */
 bindButton("btn-gas",
     () => gasActive = true,
     () => gasActive = false
@@ -143,23 +130,20 @@ bindButton("btn-brake",
 );
 
 /* =====================================================
-   STICK MODE (MULTI-TOUCH)
+   STICKS
    ===================================================== */
 function setupStick(areaId, stickId, type) {
     const area = document.getElementById(areaId);
     const stick = document.getElementById(stickId);
-    if (!area || !stick) return;
-
-    const dot = stick.children[0];
+    const dot = stick.querySelector(".stick-dot");
     let finger = null;
 
     area.addEventListener("touchstart", e => {
         if (finger !== null) return;
         const t = e.changedTouches[0];
         finger = t.identifier;
-
         stick.style.left = t.clientX + "px";
-        stick.style.top  = t.clientY + "px";
+        stick.style.top = t.clientY + "px";
         stick.style.display = "block";
     });
 
@@ -170,25 +154,24 @@ function setupStick(areaId, stickId, type) {
 
         const r = stick.getBoundingClientRect();
         let dx = t.clientX - (r.left + 70);
-        let dy = t.clientY - (r.top  + 70);
+        let dy = t.clientY - (r.top + 70);
 
         const max = 60;
-        const dist = Math.hypot(dx, dy);
-        if (dist > max) {
-            dx = dx / dist * max;
-            dy = dy / dist * max;
+        const d = Math.hypot(dx, dy);
+        if (d > max) {
+            dx = dx / d * max;
+            dy = dy / d * max;
         }
 
         dot.style.left = dx + 45 + "px";
-        dot.style.top  = dy + 45 + "px";
+        dot.style.top = dy + 45 + "px";
 
         if (type === "STEER") {
-            const angle = Math.round(90 - (dx / max) * 90);
-            currentAngle = angle;
+            currentAngle = Math.round(90 - (dx / max) * 90);
         }
 
         if (type === "THROTTLE") {
-            gasActive = dy < -15; // up = gas
+            gasActive = dy < -15;
         }
 
         sendCommand();
@@ -198,11 +181,9 @@ function setupStick(areaId, stickId, type) {
         finger = null;
         stick.style.display = "none";
         dot.style.left = "45px";
-        dot.style.top  = "45px";
-
+        dot.style.top = "45px";
         if (type === "STEER") currentAngle = "CENTER";
         if (type === "THROTTLE") gasActive = false;
-
         sendCommand(true);
     }
 
@@ -210,6 +191,5 @@ function setupStick(areaId, stickId, type) {
     area.addEventListener("touchcancel", reset);
 }
 
-/* Left stick = steering, Right stick = throttle */
-setupStick("stick-left-area",  "stick-left",  "STEER");
+setupStick("stick-left-area", "stick-left", "STEER");
 setupStick("stick-right-area", "stick-right", "THROTTLE");
