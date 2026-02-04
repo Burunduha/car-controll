@@ -117,3 +117,22 @@ html, body {
     top: 45px;
     left: 45px;
 }
+
+/* ================== TOP UI ================== */
+#top-ui {
+    position: fixed;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 10px;
+
+    z-index: 100;          /* ВЫШЕ, ЧЕМ MODES */
+    pointer-events: auto; /* ЯВНО */
+}
+
+/* ================== MODES ================== */
+#button-mode,
+#sticks-mode {
+    z-index: 10;
+}
