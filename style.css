@@ -97,3 +97,19 @@ body {
 html, body {
     touch-action: none;
 }
+
+/* === MODES CONTAINERS === */
+#button-mode,
+#sticks-mode {
+    position: fixed;
+    inset: 0;
+}
+
+/* default mode */
+#button-mode {
+    display: block;
+}
+
+#sticks-mode {
+    display: none;
+}

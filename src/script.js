@@ -1,6 +1,6 @@
 /* =====================================================
    ANDROID WEB BLUETOOTH CAR CONTROLLER
-   MODE B: BUTTONS + STICKS
+   BUTTONS + STICKS (FIXED MODE SWITCH)
    PROTOCOL: ANGLE;GAS | ANGLE;0
    ===================================================== */
 
@@ -17,7 +17,7 @@ let gasActive = false;
 /* ---------- Send throttling ---------- */
 let lastSent = "";
 let lastSendTime = 0;
-const SEND_INTERVAL_MS = 40; // ~25 Гц
+const SEND_INTERVAL_MS = 40; // ~25 Hz
 
 /* =====================================================
    BLUETOOTH CONNECT
@@ -64,22 +64,33 @@ function sendCommand(force = false) {
 }
 
 /* =====================================================
-   MODE SWITCH
+   MODE SWITCH (FIXED)
    ===================================================== */
 const buttonMode = document.getElementById("button-mode");
 const sticksMode = document.getElementById("sticks-mode");
 const modeSelect = document.getElementById("mode");
 
-modeSelect.onchange = () => {
-    const m = modeSelect.value;
-    buttonMode.style.display = m === "buttons" ? "block" : "none";
-    sticksMode.style.display = m === "sticks"  ? "block" : "none";
+function setMode(mode) {
+    if (mode === "buttons") {
+        buttonMode.style.display = "block";
+        sticksMode.style.display = "none";
+    } else {
+        buttonMode.style.display = "none";
+        sticksMode.style.display = "block";
+    }
 
-    // при переключении — стоп
+    // reset state on mode switch
     gasActive = false;
     currentAngle = "CENTER";
     sendCommand(true);
-};
+}
+
+// init
+setMode(modeSelect.value);
+
+modeSelect.addEventListener("change", () => {
+    setMode(modeSelect.value);
+});
 
 /* =====================================================
    BUTTON MODE
@@ -177,7 +188,7 @@ function setupStick(areaId, stickId, type) {
         }
 
         if (type === "THROTTLE") {
-            gasActive = dy < -15; // вверх = газ
+            gasActive = dy < -15; // up = gas
         }
 
         sendCommand();
@@ -199,6 +210,6 @@ function setupStick(areaId, stickId, type) {
     area.addEventListener("touchcancel", reset);
 }
 
-/* Left = steering, Right = throttle */
+/* Left stick = steering, Right stick = throttle */
 setupStick("stick-left-area",  "stick-left",  "STEER");
 setupStick("stick-right-area", "stick-right", "THROTTLE");
